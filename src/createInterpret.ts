@@ -13,7 +13,8 @@ import {
   TypegenDisabled,
   Typestate,
 } from 'xstate';
-import { defaultSelector, reFunction } from '~helpers';
+import { defaultSelector } from './defaultSelector';
+import { MatchesProps, Tags } from './types';
 
 export function createInterpret<
   TContext extends object,
@@ -48,33 +49,31 @@ export function createInterpret<
   const _store = createRoot(() => from(service));
   const store = () => _store() ?? service.initialState;
 
-  type GetProps<T = any, S = ReturnType<typeof store>> = {
-    accessor?: (state: S) => T;
-    equals?: (prev: T, next: T) => boolean;
-  };
+  type GetProps<T = any, S = ReturnType<typeof store>> = [
+    accessor?: (state: S) => T,
+    equals?: (prev: T, next: T) => boolean,
+  ];
 
-  const state = <T>({ accessor = defaultSelector, equals }: GetProps<T>) =>
+  const state = <T>(
+    ...[accessor = defaultSelector, equals]: GetProps<T>
+  ) =>
     createRoot(() =>
       createMemo(() => accessor(store()), undefined, {
         equals,
       }),
     );
 
-  const reducer = <T>(accessor: Required<GetProps<T>>['accessor']) => {
+  const reducer = <T>(accessor: Required<GetProps<T>>[0]) => {
     const stateAccessor = accessor;
 
-    const reduceS = <R = T>({
-      accessor: _accessor = defaultSelector,
-      equals,
-    }: GetProps<R, T>) =>
-      state({
-        accessor: state => {
-          const step1 = stateAccessor(state);
-          const step2 = _accessor(step1);
-          return step2;
-        },
-        equals,
-      });
+    const reduceS = <R = T>(
+      ...[_accessor = defaultSelector, equals]: GetProps<R, T>
+    ) =>
+      state(_state => {
+        const step1 = stateAccessor(_state);
+        const step2 = _accessor(step1);
+        return step2;
+      }, equals);
 
     return reduceS;
   };
@@ -108,17 +107,24 @@ export function createInterpret<
     }),
   );
 
-  type _MatchesProps = main.MatchesProps<TResolvedTypesMeta>;
-  const matches = (...values: _MatchesProps) =>
-    createRoot(() =>
+  type _MatchesProps = MatchesProps<TResolvedTypesMeta>;
+  const matches = (...values: _MatchesProps) => {
+    return createRoot(() =>
       createMemo(() => {
         const fn = buildMatches(value());
         return fn(...values);
       }),
     );
+  };
 
-  const stop = reFunction(service, 'stop');
-  const start = reFunction(service, 'start');
+  const tags = (...tags: Tags<TResolvedTypesMeta>) => {
+    const output = state(state => tags.every(tag => state.hasTag(tag)));
+    return output;
+  };
+
+  const stop: typeof service.stop = () => service.stop();
+  const start: typeof service.start = initial => service.start(initial);
+  const status = () => service.status;
 
   const output = {
     start,
@@ -127,9 +133,10 @@ export function createInterpret<
     sender,
     state,
     reducer,
-    value,
     matches,
     context,
+    status,
+    tags,
   } as const;
 
   return output;

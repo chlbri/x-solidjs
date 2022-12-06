@@ -8,16 +8,9 @@
     "moduleResolution": "Node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "jsx": "preserve",
-    "jsxImportSource": "solid-js",
-    "types": ["vite/client"],
     "noEmit": true,
     "allowJs": true,
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "baseUrl": ".",
-    "paths": {
-      "~helpers": ["src/helpers/index.ts"]
-    }
+    "isolatedModules": true
   }
 }

@@ -1,37 +1,63 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
+
 import dts from 'rollup-plugin-dts';
 import esbuild from 'rollup-plugin-esbuild';
 import { terser } from 'rollup-plugin-terser';
+import tsConfigPaths from 'rollup-plugin-tsconfig-paths';
 
-/** @type {import('rollup').defineConfig} */
-const bundle = config => ({
-  ...config,
-  input: 'src/index.ts',
+/** @type {(value: string) => import('rollup').RollupOptions} */
+const bundleDts = value => ({
+  input: `src/${value}.ts`,
   external: id => !/^[./]/.test(id),
+  plugins: [dts()],
+  output: {
+    format: 'es',
+    file: `lib/${value}.d.ts`,
+  },
 });
 
-/** @type {import('rollup').RollupOptions} */
-export default [
-  bundle({
-    plugins: [esbuild(), terser({})],
+/** @type {(value: string) => import('rollup').RollupOptions} */
+const bundleJS = value => {
+  return {
+    input: `src/${value}.ts`,
+    external: [
+      '@bemedev/x-matches',
+      'xstate',
+      'solid-js',
+      'solid-js/store',
+    ],
+    plugins: [esbuild(), terser({}), tsConfigPaths()],
     output: [
       {
-        file: `lib/index.js`,
         format: 'cjs',
         sourcemap: true,
+        dir: `lib`,
+        preserveModulesRoot: 'src',
+        preserveModules: true,
+        entryFileNames: '[name].js',
+        exports: 'named',
       },
       {
-        file: `lib/index.mjs`,
         format: 'es',
         sourcemap: true,
+        dir: `lib`,
+        preserveModulesRoot: 'src',
+        preserveModules: true,
+        entryFileNames: '[name].mjs',
+        exports: 'named',
       },
     ],
-  }),
-  bundle({
-    plugins: [dts()],
-    output: {
-      file: `lib/index.d.ts`,
-      format: 'es',
-    },
-  }),
-];
+  };
+};
+
+/** @type {(...values: string[]) => import('rollup').RollupOptions[]} */
+const bundles = (...values) => {
+  const types = values.map(bundleDts);
+  const jss = values.map(bundleJS);
+  const out = [...types, ...jss];
+  return out;
+};
+
+const config = bundles('assign', 'createInterpret', 'index');
+
+export default config;
