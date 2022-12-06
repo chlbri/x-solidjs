@@ -1,15 +1,9 @@
-import type { MatchOptions } from '@bemedev/x-matches';
+import type { MatchOptions, StateValue } from '@bemedev/x-matches';
 import type { Prop, TypegenEnabled } from 'xstate';
 
 /** @ignore */
 declare global {
   namespace main {
-    type StateValueMap = {
-      [key: string]: StateValue;
-    };
-
-    type StateValue = string | StateValueMap;
-
     // #region StateMatching
     type StateMatching<
       T extends Record<string, unknown> | string,

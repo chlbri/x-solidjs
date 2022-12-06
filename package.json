@@ -31,6 +31,7 @@
   "author": "chlbri <bri_lvi@icloud.com>",
   "devDependencies": {
     "@bemedev/x-test": "^0.0.2",
+    "@rollup/plugin-terser": "^0.2.0",
     "@typescript-eslint/eslint-plugin": "^5.45.1",
     "@typescript-eslint/parser": "^5.45.1",
     "esbuild": "^0.15.18",
