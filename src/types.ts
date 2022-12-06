@@ -29,9 +29,6 @@ type SubType<Base extends object, Condition> = Pick<
 >;
 // #endregion
 
-type Fn<P extends any[] = any, R = any> = (...arg: P) => R;
-type KeysFn<T extends object = object> = keyof SubType<T, Fn>;
-
 type FineType<
   T,
   PartialKeys extends keyof T = keyof T,

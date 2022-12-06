@@ -47,8 +47,12 @@ describe('Acceptation', () => {
     expectFn(reducer);
   });
 
-  test.concurrent('useHasTags is function', () => {
+  test.concurrent('send is function', () => {
     expectFn(send);
+  });
+
+  test.concurrent('tags is function', () => {
+    expectFn(tags);
   });
 });
 
