@@ -2,6 +2,7 @@
   "version": "0.0.1",
   "license": "MIT",
   "name": "@bemedev/x-solidjs",
+  "description": "Xstate interpreter for solid js",
   "author": {
     "email": "bri_lvi@icloud.com",
     "name": "chlbri",
